@@ -1,4 +1,4 @@
-PROJ=add_numbers
+PROJ=fourth_elevation
 
 CC=gcc
 

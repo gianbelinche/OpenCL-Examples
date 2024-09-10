@@ -1,6 +1,6 @@
-#define PROGRAM_FILE "vec-add-standard.cl"
-#define KERNEL_FUNC "add_vec_gpu"
-#define ARRAY_SIZE 64
+#define PROGRAM_FILE "fourth_elevation.cl"
+#define KERNEL_FUNC "fourth_elevation"
+#define ARRAY_SIZE 1024*1024*1023
 
 #include <math.h>
 #include <stdio.h>
@@ -118,7 +118,27 @@ cl_program build_program(cl_context ctx, cl_device_id dev, const char* filename)
    return program;
 }
 
+int* make_vector(int vector_len){
+	int* vec = malloc(vector_len*sizeof(int));
+	for (int i = 0; i < vector_len;i++){
+		vec[i] = i % 100;
+	}
+	return vec;
+}
 
+void check_vector(int* vector, int vector_len){
+	int check_error = 0;
+	for(int i = 0; i < vector_len; i++) {
+		int j = (i % 100);
+		if(vector[i] != j*j*j*j){
+			check_error = 1;
+			printf("%i, %i, %i\n", i, i % 100, vector[i]);
+			break;
+		}
+
+	}
+	printf("%s \n", check_error ? "Error" : "Ok");
+}
 
 
 
@@ -132,15 +152,14 @@ int main() {
    cl_command_queue queue;
    cl_int i, err;
 
+   int vector_len = ARRAY_SIZE;
+
    /* Data and buffers    */
-   float data[ARRAY_SIZE];
-   float result[ARRAY_SIZE];
+   int* data = make_vector(vector_len);
    cl_mem input_buffer;
 
-   /* Initialize data */
-   for(i=0; i<ARRAY_SIZE; i++) {
-      data[i] = 1.0f*i;
-   }
+   struct timespec tstart={0,0}, tend={0,0};
+   clock_gettime(CLOCK_MONOTONIC, &tstart);
 
    /* Create device and context 
 
@@ -182,9 +201,9 @@ int main() {
 		sizeof(size_t),
 		&work_items_amount,
 		NULL);
-	size_t global_work_size = (size_t) ceil( ARRAY_SIZE / (float) work_items_amount ) * work_items_amount;
+	size_t global_work_size = (size_t) ceil( vector_len / (float) work_items_amount ) * work_items_amount;
    input_buffer = clCreateBuffer(context, CL_MEM_READ_WRITE |
-         CL_MEM_COPY_HOST_PTR, ARRAY_SIZE * sizeof(float), data, &err); // <=====INPUT
+         CL_MEM_COPY_HOST_PTR, vector_len * sizeof(int), data, &err); // <=====INPUT
    if(err < 0) {
       perror("Couldn't create a buffer");
       exit(1);   
@@ -208,7 +227,6 @@ int main() {
    };
 
    /* Create kernel arguments */
-   int vector_len = ARRAY_SIZE;
    err = clSetKernelArg(kernel, 0, sizeof(cl_mem), &input_buffer); // <=====INPUT
    err |= clSetKernelArg(kernel, 1, sizeof(cl_int), (void *) &(vector_len)); // <=====INPUT
    if(err < 0) {
@@ -237,28 +255,34 @@ int main() {
 
    /* Read the kernel's output    */
    err = clEnqueueReadBuffer(queue, input_buffer, CL_TRUE, 0, 
-         ARRAY_SIZE * sizeof(float), result , 0, NULL, NULL); // <=====GET OUTPUT
+         vector_len * sizeof(int), data , 0, NULL, NULL); // <=====GET OUTPUT
    if(err < 0) {
       perror("Couldn't read the buffer");
       exit(1);
    }
 
-   /* Check result */
-   for (i=0; i<ARRAY_SIZE; i++) {
-      float epsilon = 0.001;
-      if (fabs(result[i] - data[i]*data[i]*data[i]*data[i]) > epsilon) {
-         printf("Check failed at %d\n", i);
-         printf("result[i] = %f, expected: %f\n", result[i],data[i]*data[i]*data[i]*data[i]);
-         break;
-      }
-   }
    
-   printf("Check finished\n");
    /* Deallocate resources */
    clReleaseKernel(kernel);
    clReleaseMemObject(input_buffer);
    clReleaseCommandQueue(queue);
    clReleaseProgram(program);
    clReleaseContext(context);
+
+   clock_gettime(CLOCK_MONOTONIC, &tend);
+   printf("Final time GPU %.5f seconds\n",
+           ((double)tend.tv_sec + 1.0e-9*tend.tv_nsec) - 
+           ((double)tstart.tv_sec + 1.0e-9*tstart.tv_nsec));
+
+   struct timespec tstart_cpu={0,0}, tend_cpu={0,0};
+   clock_gettime(CLOCK_MONOTONIC, &tstart_cpu);
+   check_vector(data, vector_len);
+   clock_gettime(CLOCK_MONOTONIC, &tend_cpu);
+
+   printf("Final time CPU %.5f seconds\n",
+           ((double)tend_cpu.tv_sec + 1.0e-9*tend_cpu.tv_nsec) - 
+           ((double)tstart_cpu.tv_sec + 1.0e-9*tstart_cpu.tv_nsec));
+
+   printf("Check finished\n");
    return 0;
 }

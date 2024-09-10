@@ -1,0 +1,11 @@
+---
+triple:          'x86_64-apple-darwin'
+binary-path:     fourth_elevation
+relocations:
+  - { offsetInCU: 0x26, offset: 0x26, size: 0x8, addend: 0x0, symName: _create_device, symObjAddr: 0x0, symBinAddr: 0x100001500, symSize: 0xB0 }
+  - { offsetInCU: 0x83, offset: 0x83, size: 0x8, addend: 0x0, symName: _create_device, symObjAddr: 0x0, symBinAddr: 0x100001500, symSize: 0xB0 }
+  - { offsetInCU: 0xC7, offset: 0xC7, size: 0x8, addend: 0x0, symName: _build_program, symObjAddr: 0xB0, symBinAddr: 0x1000015B0, symSize: 0x1B0 }
+  - { offsetInCU: 0x16F, offset: 0x16F, size: 0x8, addend: 0x0, symName: _make_vector, symObjAddr: 0x260, symBinAddr: 0x100001760, symSize: 0x60 }
+  - { offsetInCU: 0x1C1, offset: 0x1C1, size: 0x8, addend: 0x0, symName: _check_vector, symObjAddr: 0x2C0, symBinAddr: 0x1000017C0, symSize: 0xD0 }
+  - { offsetInCU: 0x239, offset: 0x239, size: 0x8, addend: 0x0, symName: _main, symObjAddr: 0x390, symBinAddr: 0x100001890, symSize: 0x47F }
+...
