@@ -1,8 +1,8 @@
 extern crate ocl;
-use std::time::Instant;
+use std::{i32, time::Instant, usize};
 
 #[allow(dead_code)]
-fn fourth_elevation_ocl(input: Vec<f32> ,input_size: usize) -> ocl::Result<Vec<f32>> {
+fn fourth_elevation_ocl(input: Vec<f32> ,input_size: i32) -> ocl::Result<Vec<f32>> {
     use ocl::{flags, Buffer, Context, Device, Kernel, Platform, Program, Queue};
 
     let kernel_code = include_str!("./fourth_elevation.cl");
@@ -61,13 +61,14 @@ fn fourth_elevation_ocl(input: Vec<f32> ,input_size: usize) -> ocl::Result<Vec<f
     }
 
     // (5) Read results from the device into a vector (`::block` not shown):
-    let mut vec = vec![0.0f32; input_size];
+    let mut vec = vec![0.0f32; input_size as usize];
     buffer_out.cmd().queue(&queue).offset(0).read(&mut vec).enq()?;
 
     Ok(vec)
 }
 
-fn fourth_elevation_cpu(input: Vec<f32> ,input_size: usize) -> Vec<f32> {
+fn fourth_elevation_cpu(input: Vec<f32> ,input_size: i32) -> Vec<f32> {
+    let input_size = input_size as usize;
     let mut result = vec![0.0f32; input_size];
     for i in 0..input_size {
         result[i] = input[i].powf(4.0);
@@ -78,10 +79,10 @@ fn fourth_elevation_cpu(input: Vec<f32> ,input_size: usize) -> Vec<f32> {
 
 fn main() {
     let relative_error = 0.000001; // 0,0001% relative error
-    let input_size = 1024 * 1024 * 1023;
-    let mut input = vec![0.0f32; input_size];
+    let input_size: i32 = 1024 * 1024 * 1023;
+    let mut input = vec![0.0f32; input_size as usize];
     for i in 0..input_size {
-        input[i] = i as f32;
+        input[i as usize] = i as f32;
     }
     let start = Instant::now();
     let ocl_result = fourth_elevation_ocl(input.clone(),input_size).unwrap();
