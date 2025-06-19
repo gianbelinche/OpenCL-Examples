@@ -1,5 +1,5 @@
 extern crate ocl;
-use std::{i32, time::Instant, usize};
+use std::time::Instant;
 
 #[allow(dead_code)]
 fn fourth_elevation_ocl(input: Vec<f32>, input_size: i32) -> ocl::Result<Vec<f32>> {
@@ -18,7 +18,7 @@ fn fourth_elevation_ocl(input: Vec<f32>, input_size: i32) -> ocl::Result<Vec<f32
     );
     let context = Context::builder()
         .platform(platform)
-        .devices(device.clone())
+        .devices(device)
         .build()?;
     let program = Program::builder()
         .devices(device)
@@ -49,7 +49,7 @@ fn fourth_elevation_ocl(input: Vec<f32>, input_size: i32) -> ocl::Result<Vec<f32
         .global_work_size(input_size)
         .arg(&buffer_in)
         .arg(&buffer_out)
-        .arg(&input_size)
+        .arg(input_size)
         .build()?;
 
     // (4) Run the kernel (default parameters shown for demonstration purposes):
