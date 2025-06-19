@@ -2,8 +2,8 @@ extern crate ocl;
 use std::{i32, time::Instant, usize};
 
 #[allow(dead_code)]
-fn fourth_elevation_ocl(input: Vec<f32> ,input_size: i32) -> ocl::Result<Vec<f32>> {
-    use ocl::{flags, Buffer, Context, Device, Kernel, Platform, Program, Queue};
+fn fourth_elevation_ocl(input: Vec<f32>, input_size: i32) -> ocl::Result<Vec<f32>> {
+    use ocl::{Buffer, Context, Device, Kernel, Platform, Program, Queue, flags};
 
     let kernel_code = include_str!("./fourth_elevation.cl");
 
@@ -12,7 +12,10 @@ fn fourth_elevation_ocl(input: Vec<f32> ,input_size: i32) -> ocl::Result<Vec<f32
     let platform = Platform::default();
     let device = Device::first(platform)?;
     println!("Using device: {}", device.name()?);
-    println!("Device type: {:?}", device.info(ocl::enums::DeviceInfo::Type)?);
+    println!(
+        "Device type: {:?}",
+        device.info(ocl::enums::DeviceInfo::Type)?
+    );
     let context = Context::builder()
         .platform(platform)
         .devices(device.clone())
@@ -62,12 +65,17 @@ fn fourth_elevation_ocl(input: Vec<f32> ,input_size: i32) -> ocl::Result<Vec<f32
 
     // (5) Read results from the device into a vector (`::block` not shown):
     let mut vec = vec![0.0f32; input_size as usize];
-    buffer_out.cmd().queue(&queue).offset(0).read(&mut vec).enq()?;
+    buffer_out
+        .cmd()
+        .queue(&queue)
+        .offset(0)
+        .read(&mut vec)
+        .enq()?;
 
     Ok(vec)
 }
 
-fn fourth_elevation_cpu(input: Vec<f32> ,input_size: i32) -> Vec<f32> {
+fn fourth_elevation_cpu(input: Vec<f32>, input_size: i32) -> Vec<f32> {
     let input_size = input_size as usize;
     let mut result = vec![0.0f32; input_size];
     for i in 0..input_size {
@@ -85,18 +93,21 @@ fn main() {
         input[i as usize] = i as f32;
     }
     let start = Instant::now();
-    let ocl_result = fourth_elevation_ocl(input.clone(),input_size).unwrap();
+    let ocl_result = fourth_elevation_ocl(input.clone(), input_size).unwrap();
     let duration = start.elapsed();
     println!("GPU Took: {:?}", duration);
     let start = Instant::now();
-    let cpu_result = fourth_elevation_cpu(input,input_size);
+    let cpu_result = fourth_elevation_cpu(input, input_size);
     let duration = start.elapsed();
     println!("CPU Took: {:?}", duration);
-    for (index,value) in ocl_result.iter().enumerate() {
+    for (index, value) in ocl_result.iter().enumerate() {
         if (cpu_result[index] - value).abs() / value > relative_error {
-            println!("Mismatch at index {}: GPU value = {}, CPU value = {}", index, value, cpu_result[index]);
+            println!(
+                "Mismatch at index {}: GPU value = {}, CPU value = {}",
+                index, value, cpu_result[index]
+            );
             return;
         }
     }
     println!("All values match!");
-}   
+}
