@@ -1,4 +1,8 @@
 
-add_numbers
-add_numbers.dSYM/Contents/Info.plist
-add_numbers.dSYM/Contents/Resources/Relocations/x86_64/add_numbers.yml
+c_example/add_numbers
+c_example/add_numbers.dSYM/Contents/Info.plist
+c_example/add_numbers.dSYM/Contents/Resources/Relocations/x86_64/add_numbers.yml
+c_example/fourth_elevation
+c_example/fourth_elevation.dSYM/Contents/Info.plist
+c_example/fourth_elevation.dSYM/Contents/Resources/Relocations/x86_64/fourth_elevation.yml
+rust-example/target
